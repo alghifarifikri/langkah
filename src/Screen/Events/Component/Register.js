@@ -26,27 +26,34 @@ export default function Register() {
   const event = useSelector(state => state.Event.data);
   const loading = useSelector(state => state.Event.loading);
   const [visibleIndividu, setVisibleIndividu] = useState(false);
-
-  console.log({event});
+  const [raw, setRaw] = useState({});
+  const [data, setData] = useState(event);
 
   useEffect(() => {
     dispatch(DataEvent(dataUser.role_id));
   }, []);
 
-  const handleVisible = (e, type) => {
+  useEffect(() => {
+    setData(event);
+  }, [event]);
+
+  const handleVisible = (e, type, item) => {
     if (type === 'Individu') {
       setVisibleIndividu(e);
+      setRaw(item);
     }
   };
+
+  console.log({data});
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={event}
+        data={data}
         renderItem={({item}) => (
           <List.Section>
             <List.Accordion
-              title={item.event_name}
+              title={item.eventname}
               style={styles.content}
               left={() => (
                 <Image
@@ -60,14 +67,14 @@ export default function Register() {
                 <Text style={styles.textName}>{t('common:individu')}</Text>
                 <ButtonCustom
                   label={'Register'}
-                  onClick={() => handleVisible(true, 'Individu')}
+                  onClick={() => handleVisible(true, 'Individu', item)}
                   style={{
                     button: styles.buttonLogin,
                     text: styles.login,
                   }}
                 />
               </View>
-              <View style={styles.headCard}>
+              {/* <View style={styles.headCard}>
                 <Text style={styles.textName}>{t('common:collective')}</Text>
                 <ButtonCustom
                   label={'Register'}
@@ -88,7 +95,7 @@ export default function Register() {
                     text: styles.login,
                   }}
                 />
-              </View>
+              </View> */}
             </List.Accordion>
           </List.Section>
         )}
@@ -100,6 +107,7 @@ export default function Register() {
       <IndividuModal
         visible={visibleIndividu}
         handleVisible={(param, type) => handleVisible(param, type)}
+        data={raw}
       />
       <ModalCustom visible={loading} />
     </View>
@@ -117,11 +125,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   content: {
-    // paddingLeft: 20,
-    // paddingRight: 20,
-    // paddingTop: 10,
-    // paddingBottom: 10,
-    // flexDirection: 'row',
     borderBottomWidth: 1,
     borderColor: '#F1F1F1',
     backgroundColor: 'white',

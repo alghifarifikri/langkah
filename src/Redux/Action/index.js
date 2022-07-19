@@ -17,6 +17,14 @@ import Follow from './Follow';
 import DataFollowers from './DataFollowers';
 import DataMilesStones from './DataMilesStone';
 import DataEvent from './DataEvent';
+import REF_GetDistance from './REF_GetDistance';
+import REF_GetCategory from './REF_GetCategory';
+import REF_GetOption from './REF_GetOption';
+import REF_GetQuestion from './REF_GetQuestion';
+import REF_GetAddOns from './REF_GetAddOns';
+import DataPayment from './DataPayment';
+import REF_GetJersey from './REF_GetJersey';
+import CekEmail from './CekEmail';
 
 export {
   REF_GetNationality,
@@ -38,4 +46,12 @@ export {
   DataFollowers,
   DataMilesStones,
   DataEvent,
+  REF_GetDistance,
+  REF_GetCategory,
+  REF_GetOption,
+  REF_GetQuestion,
+  REF_GetAddOns,
+  REF_GetJersey,
+  DataPayment,
+  CekEmail,
 };

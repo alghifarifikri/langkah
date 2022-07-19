@@ -65,10 +65,10 @@ export default function Profiles() {
             <Text style={styles.premium}>PREMIUM</Text>
           </View>
           <View style={styles.marginTop}>
-            <Text style={styles.name}>{dataUser.name}</Text>
+            <Text style={styles.name}>{dataUser?.name}</Text>
           </View>
           <View>
-            <Text style={styles.bio}>Hello there, I'm {dataUser.name}</Text>
+            <Text style={styles.bio}>Hello there, I'm {dataUser?.name}</Text>
           </View>
           <View style={styles.row}>
             <View style={styles.follow}>

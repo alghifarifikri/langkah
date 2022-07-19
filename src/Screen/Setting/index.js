@@ -35,7 +35,7 @@ export default function Setting() {
   const dataLabel = [
     {
       label: 'Email',
-      value: dataUser.email,
+      value: dataUser?.email,
     },
     {
       label: 'Change Password',
@@ -77,7 +77,7 @@ export default function Setting() {
     } else if (type === 'google') {
       GoogleSignin.signOut();
     }
-    AsyncStorage.removeItem('accessToken');
+    AsyncStorage.clear();
     dispatch(SetDataProfile({}));
     navigation.navigate('LogIn');
   };
@@ -115,8 +115,10 @@ export default function Setting() {
                 />
               </View>
               <View style={styles.username}>
-                <Text style={styles.name}>{dataUser.name}</Text>
-                <TouchableOpacity style={styles.row}>
+                <Text style={styles.name}>{dataUser?.name}</Text>
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() => navigation.navigate('EditProfile')}>
                   <Text style={styles.editProfile}>
                     {t('common:editprofile')}
                   </Text>

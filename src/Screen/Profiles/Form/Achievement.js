@@ -1,4 +1,4 @@
-import {View, StyleSheet, Image, Dimensions} from 'react-native';
+import {View, StyleSheet, Image, Dimensions, Platform} from 'react-native';
 import React from 'react';
 
 const {width} = Dimensions.get('window');
@@ -18,7 +18,7 @@ export default function Achievement() {
   return (
     <View style={styles.row}>
       {data?.map((item, index) => (
-        <View style={styles.box}>
+        <View style={Platform.OS === 'android' ? styles.box : styles.boxIphone}>
           <Image
             style={styles.image}
             resizeMode="cover"
@@ -44,6 +44,20 @@ const styles = StyleSheet.create({
     elevation: 6,
     shadowRadius: 15,
     shadowOffset: {width: 56, height: 13},
+    width: '45%',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    marginBottom: 10,
+    padding: 13,
+    borderRadius: 20,
+    margin: 5,
+  },
+  boxIphone: {
+    shadowColor: '#000000',
+    shadowOpacity: 0.4,
+    elevation: 5,
+    shadowRadius: 15,
+    shadowOffset: {width: 5, height: 5},
     width: '45%',
     backgroundColor: '#FFFFFF',
     alignItems: 'center',

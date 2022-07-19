@@ -1,284 +1,376 @@
-import {
-  View,
-  ScrollView,
-  StyleSheet,
-  Image,
-  Dimensions,
-  Text,
-  FlatList,
-} from 'react-native';
-import React, {useState} from 'react';
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-sparse-arrays */
+/* eslint-disable react-hooks/exhaustive-deps */
+import {View, ScrollView, StyleSheet, Alert, Dimensions} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import InputCustom from '../../../Component/Form/InputCustom';
 import NotifHeader from '../../../Component/Global/NotifHeader';
-import SelectCustom from '../../../Component/Form/SelectCustom';
 import ButtonCustom from '../../../Component/Form/ButtonCustom';
-import {Checkbox, List} from 'react-native-paper';
+import {useDispatch, useSelector} from 'react-redux';
+import LabelCustom from '../../../Component/Form/LabelCustom';
+import SelectLabelCustom from '../../../Component/Form/SelectLabelCustom';
+import {DataPayment} from '../../../Redux/Action';
+import axios from 'axios';
+import {HEADER_MIDTRANS, URL_MIDTRANS} from '../../../Utils/Url';
+import moment from 'moment';
 
 const win = Dimensions.get('window');
 const ratio = win.width / 541;
 
-const addOn = [
-  {
-    type: 'FOLDING BAG',
-    url: 'https://imtiket.com/IMRR_DEV2/uploads/addons/14FFE1A1-46D8-46F2-A01F-BD9ADE25E56F.png',
-    size: 'XL',
-    qty: 1,
-    price: 25000,
-  },
-  {
-    type: 'TOPI',
-    url: 'https://imtiket.com/IMRR_DEV2/uploads/addons/115D2D74-D74A-4C84-8601-E120CDD1BC4D.png',
-    size: 'XL',
-    qty: 1,
-    price: 25000,
-  },
-  {
-    type: 'MASK',
-    url: 'https://imtiket.com/IMRR_DEV2/uploads/addons/mask.png',
-    size: 'XL',
-    qty: 1,
-    price: 25000,
-  },
-  {
-    type: 'SUNGLASSES',
-    url: 'https://imtiket.com/IMRR_DEV2/uploads/addons/4329FFC5-920F-4FE8-8D8E-F5E364CC460A.jpg',
-    size: 'XL',
-    qty: 1,
-    price: 25000,
-  },
-];
-
 export default function Payment({route, navigation}) {
-  //   const {methodRegist} = route?.params;
-  const [checked, setChecked] = useState(false);
+  const {data, id, event_name, discount_voucher, setupPrice} = route?.params;
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
   const {t} = useTranslation();
+  const paymentData = useSelector(state => state.Payment.data);
+  const dataUser = useSelector(state => state.Profile.data);
+  const refJersey = useSelector(state => state.REF_Jersey.data);
+  const [payment, setDataPayment] = useState(paymentData);
+
+  useEffect(() => {
+    dispatch(DataPayment(id));
+    setDataPayment(paymentData);
+  }, [paymentData]);
+
+  const rupiahFormat = e => {
+    const numb = Number(e);
+    const format = numb?.toString().split('').reverse().join('');
+    const convert = format?.match(/\d{1,3}/g);
+    const rupiah = 'Rp ' + convert?.join('.').split('').reverse().join('');
+    return rupiah;
+  };
+
+  let priceEvent = setupPrice !== null ? setupPrice : payment[0]?.price_event;
+  let total = 0;
+
+  if (discount_voucher) {
+    if (Number(discount_voucher.nominal > 0)) {
+      priceEvent =
+        Number(priceEvent) - Number(discount_voucher.nominal);
+      total = Number(payment[0]?.grandTotal) - Number(discount_voucher.nominal);
+    } else if (Number(discount_voucher.percent > 0)) {
+      priceEvent =
+        Number(priceEvent) -
+        Number(priceEvent) *
+          (Number(discount_voucher.percent) / 100);
+      total =
+        Number(payment[0]?.grandTotal) -
+        Number(payment[0]?.grandTotal) *
+          (Number(discount_voucher.percent) / 100);
+    }
+  } else {
+    priceEvent = Number(priceEvent);
+    total = Number(payment[0]?.grandTotal);
+  }
+
+  const pay = async () => {
+    setLoading(true);
+    if (payment[0]?.price_event === '0') {
+      return Alert.alert(
+        'Gagal Bayar',
+        'Event Fee Belum Diatur, Hubungi Admin!',
+        [{text: 'OK', onPress: () => console.log('OK Pressed')}, ,],
+      );
+    }
+    const payload = {
+      transaction_details: {
+        order_id: payment[0]?.orderid,
+        gross_amount: total,
+      },
+      credit_card: {
+        secure: true,
+      },
+      customer_details: {
+        first_name: dataUser.name,
+        last_name: '',
+        email: dataUser.email,
+        phone: dataUser.notelp,
+        billing_address: {},
+        shipping_address: {},
+      },
+      item_details: [
+        {
+          id: event_name,
+          price: priceEvent || 0,
+          quantity: 1,
+          name: payment[0]?.distance_name.concat(payment[0]?.category_name),
+          brand: 'IMRR',
+          category: '',
+          merchant_name: 'IMRR',
+        },
+        {
+          id: event_name,
+          price: Number(payment[0]?.disc) * -1 || 0,
+          quantity: 1,
+          name: 'Voucher / Disc Event',
+          brand: 'IMRR',
+          category: '',
+          merchant_name: 'IMRR',
+        },
+        {
+          id: event_name,
+          price: Number(payment[0]?.admin_fee) || 0,
+          quantity: 1,
+          name: 'Admin Fee Event',
+          brand: 'IMRR',
+          category: '',
+          merchant_name: 'IMRR',
+        },
+        {
+          id: event_name,
+          price: Number(payment[0]?.amount_addon) || 0,
+          quantity: 1,
+          name: 'Add On',
+          brand: 'IMRR',
+          category: '',
+          merchant_name: 'IMRR',
+        },
+        {
+          id: event_name,
+          price: Number(payment[0]?.admin_fee_addon) || 0,
+          quantity: 1,
+          name: 'Admin Fee Add On',
+          brand: 'IMRR',
+          category: '',
+          merchant_name: 'IMRR',
+        },
+        {
+          id: event_name,
+          price: Number(payment[0]?.shipping_fee) || 0,
+          quantity: 1,
+          name: 'Shipping Fee',
+          brand: 'IMRR',
+          category: '',
+          merchant_name: 'IMRR',
+        },
+        ,
+      ],
+      expiry: {
+        start_time: moment(new Date(), 'YYYY-MM-DD HH:mm:ss').format(
+          'YYYY-MM-DD HH:mm:ss[Z]',
+        ),
+        unit: 'minutes',
+        duration: 10,
+      },
+    };
+
+    console.log({payload});
+    try {
+      const res = await axios.post(URL_MIDTRANS + 'transactions', payload, {
+        headers: HEADER_MIDTRANS,
+      });
+      if (res.status === 201) {
+        const url = res.data.redirect_url;
+        navigation.navigate('Midtrans', {
+          redirect_url: url,
+          order_id: payment[0]?.orderid,
+        });
+      }
+    } catch (e) {
+      console.log({e: e});
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const validateDiscount = e => {
+    if (discount_voucher) {
+      if (Number(discount_voucher.nominal > 0)) {
+        return Number(e) - Number(discount_voucher.nominal);
+      } else if (Number(discount_voucher.percent > 0)) {
+        return Number(e) - Number(e) * (Number(discount_voucher.percent) / 100);
+      }
+    } else {
+      return Number(e);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <NotifHeader label={t('common:payment')} />
       <View style={styles.line} />
       <ScrollView style={styles.scroll}>
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={'Order ID'}
-          keyJson="order_id"
+          keyJson="orderid"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={payment[0]?.orderid}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={'No Reg'}
-          keyJson="no_reg"
+          keyJson="generatedid"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={payment[0]?.generatedid}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
-          type="fullname"
-          label={t('common:name')}
-          keyJson="name"
-          disabled={true}
-          // onChange={text => onChange(text)}
-          // value={val.name}
-          style={{
-            label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
-          }}
-        />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={'Email'}
-          keyJson="email"
+          keyJson="email_pendaftar"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={payment[0]?.email_pendaftar}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:distance')}
-          keyJson="distance"
+          keyJson="distance_name"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={payment[0]?.distance_name}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:category')}
-          keyJson="category"
+          keyJson="category_name"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={payment[0]?.category_name}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:option')}
-          keyJson="option"
+          keyJson="option_name"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={payment[0]?.option_name}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <FlatList
-          data={addOn}
-          renderItem={({item}) => (
-            <List.Section>
-              <List.Accordion
-                title={item.type}
-                style={styles.content}
-                left={() => (
-                  <Image
-                    style={styles.picProfile}
-                    source={{
-                      uri: item.url,
-                    }}
-                  />
-                )}>
-                <View style={styles.headCard}>
-                  <Text style={styles.textName}>Size ({item.size})</Text>
-                </View>
-                <View style={styles.headCard}>
-                  <Text style={styles.textName}>Qty ({item.qty})</Text>
-                </View>
-                <View style={styles.headCard}>
-                  <Text style={styles.textName}>Price ({item.price})</Text>
-                </View>
-              </List.Accordion>
-            </List.Section>
-          )}
-          keyExtractor={item => item.id}
-          // refreshing={loading}
-        />
-        <InputCustom
-          type="fullname"
-          label="Voucher"
-          keyJson="voucher"
-          //   onChange={text => onChange(text)}
-          //   value={val.email}
+        <SelectLabelCustom
+          label={t('common:jersey')}
+          placeholders={t('common:selectdistance')}
+          keyJson="jersey_id"
+          disabled={true}
+          // onChange={text => onChange(text)}
+          // onChangeParam={e => onChangeCategory(e)}
+          value={data?.jersey_id}
           style={{
             label: styles.label,
-            input: styles.input,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
+          item={refJersey}
         />
-        <ButtonCustom
-          label={t('common:activate')}
-          // onClick={() => loginEmail()}
-          // disabled={disabled}
-          style={{
-            button: styles.buttonEmail,
-            text: styles.login,
-          }}
-        />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:eventfee')}
           keyJson="eventfee"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={
+            rupiahFormat(validateDiscount(payment[0]?.price_event)) ||
+            rupiahFormat('0')
+          }
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:adminfeeevent')}
-          keyJson="adminfeeevent"
+          keyJson="admin_fee"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={rupiahFormat(payment[0]?.admin_fee) || rupiahFormat('0')}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={'Add On'}
-          keyJson="addOn"
+          keyJson="amount_addon"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={rupiahFormat(payment[0]?.amount_addon) || rupiahFormat('0')}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:adminfeeaddon')}
-          keyJson="adminfeeaddon"
+          keyJson="admin_fee_addon"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={rupiahFormat(payment[0]?.admin_fee_addon) || rupiahFormat('0')}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:shippingfee')}
-          keyJson="shippingfee"
+          keyJson="shipping_fee"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={rupiahFormat(payment[0]?.shipping_fee) || rupiahFormat('0')}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:totaladminfee')}
           keyJson="totaladminfee"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={
+            rupiahFormat(
+              Number(payment[0]?.admin_fee) +
+                Number(payment[0]?.admin_fee_addon),
+            ).toString() || rupiahFormat('0')
+          }
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        {/* <LabelCustom
           type="fullname"
           label={t('common:totalamount')}
           keyJson="totalamount"
@@ -287,37 +379,37 @@ export default function Payment({route, navigation}) {
           // value={val.name}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
-        />
-        <InputCustom
+        /> */}
+        <LabelCustom
           type="fullname"
           label={t('common:discount')}
-          keyJson="discount"
+          keyJson="disc"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={payment[0]?.disc || '0'}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <InputCustom
+        <LabelCustom
           type="fullname"
           label={t('common:grandtotal')}
-          keyJson="grandtotal"
+          keyJson="grandTotal"
           disabled={true}
           // onChange={text => onChange(text)}
-          // value={val.name}
+          value={rupiahFormat(validateDiscount(payment[0]?.grandTotal))}
           style={{
             label: styles.label,
-            input: styles.inputDisabled,
-            view: styles.view,
+            input: styles.inputDisabled2,
+            view: styles.view2,
           }}
         />
-        <View style={styles.check}>
+        {/* <View style={styles.check}>
           <Checkbox
             status={checked ? 'checked' : 'unchecked'}
             onPress={() => {
@@ -330,14 +422,14 @@ export default function Payment({route, navigation}) {
             </Text>
             <Text style={styles.term}>terms and condition</Text>
           </View>
-        </View>
+        </View> */}
         <View>
           <ButtonCustom
             label={t('common:register')}
-            disabled={!checked}
-            // onClick={() => signUpMember()}
+            onClick={() => pay()}
+            disabled={loading}
             style={{
-              button: checked ? styles.buttonLogin : styles.buttonLoading,
+              button: !loading ? styles.buttonLogin : styles.buttonLoading,
               text: styles.login,
             }}
           />
@@ -418,8 +510,18 @@ const styles = StyleSheet.create({
     color: '#000000',
     backgroundColor: '#E9ECEF',
   },
+  inputDisabled2: {
+    height: 35,
+    marginTop: -5,
+    color: '#000000',
+    marginLeft: 'auto',
+  },
   view: {
     marginBottom: 10,
+  },
+  view2: {
+    // marginBottom: 10,
+    flexDirection: 'row',
   },
   address: {
     borderBottomWidth: 1,
@@ -446,39 +548,22 @@ const styles = StyleSheet.create({
     width: '50%',
   },
   buttonLogin: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.9,
-    elevation: 6,
-    shadowRadius: 15,
-    shadowOffset: {width: 56, height: 13},
     width: '100%',
     backgroundColor: '#F65431',
     alignItems: 'center',
     marginBottom: 30,
-    marginTop: 30,
     padding: 13,
     borderRadius: 10,
   },
   buttonLoading: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.9,
-    elevation: 6,
-    shadowRadius: 15,
-    shadowOffset: {width: 56, height: 13},
     width: '100%',
     backgroundColor: 'grey',
     alignItems: 'center',
     marginBottom: 30,
-    marginTop: 30,
     padding: 13,
     borderRadius: 10,
   },
   buttonEmail: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.9,
-    elevation: 6,
-    shadowRadius: 15,
-    shadowOffset: {width: 56, height: 13},
     width: '100%',
     backgroundColor: '#F65431',
     alignItems: 'center',

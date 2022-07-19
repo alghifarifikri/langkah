@@ -9,7 +9,6 @@ import {Checkbox} from 'react-native-paper';
 import ButtonCustom from '../../Component/Form/ButtonCustom';
 import Section1 from './Form/Section1';
 import Section2 from './Form/Section2';
-import axios from 'axios';
 import Section3 from './Form/Section3';
 import Section4 from './Form/Section4';
 import {useDispatch, useSelector} from 'react-redux';

@@ -31,6 +31,9 @@ import Detail from '../Screen/Journey/Form/Detail';
 import FormRegister from '../Screen/Events/Component/FormRegister';
 import Payment from '../Screen/Events/Component/Payment';
 import {useSelector} from 'react-redux';
+import EditProfile from '../Screen/Setting/Form/EditProfile';
+import Midtrans from '../Screen/Events/Component/Midtrans';
+import Thanks from '../Screen/Events/Component/Thanks';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -39,14 +42,14 @@ const {width} = Dimensions.get('window');
 function Lounge() {
   return (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text>Lounge</Text>
+      <Text>Coming Soon</Text>
     </View>
   );
 }
 function Training() {
   return (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text>Training</Text>
+      <Text>Coming Soon</Text>
     </View>
   );
 }
@@ -57,6 +60,7 @@ function TabScreens() {
   return (
     <Tab.Navigator
       initialRouteName="Journey"
+      backBehavior="initialRoute"
       screenOptions={{
         tabBarActiveTintColor: 'orange',
         tabBarInactiveTintColor: 'black',
@@ -147,6 +151,9 @@ function stackScreen() {
         <Stack.Screen name="Detail" component={Detail} />
         <Stack.Screen name="FormRegister" component={FormRegister} />
         <Stack.Screen name="Payment" component={Payment} />
+        <Stack.Screen name="EditProfile" component={EditProfile} />
+        <Stack.Screen name="Midtrans" component={Midtrans} />
+        <Stack.Screen name="Thanks" component={Thanks} />
         <Stack.Screen name="Tab" component={TabScreens} />
       </Stack.Navigator>
     </NavigationContainer>

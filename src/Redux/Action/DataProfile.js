@@ -36,6 +36,7 @@ export default function DataProfile() {
         new GraphRequestManager().addRequest(profileRequest).start();
       } else if (type === 'google') {
         dataUser = await GoogleSignin.getCurrentUser();
+        console.log({dataUser});
         const data = {
           NoId: dataUser.user.id,
           name: dataUser.user.name,
@@ -43,6 +44,9 @@ export default function DataProfile() {
           image: dataUser.user.photo,
         };
         dispatch(SetDataProfile(data));
+      } else {
+        const data = await AsyncStorage.getItem('dataUser');
+        dispatch(SetDataProfile(JSON.parse(data)));
       }
     } catch (e) {
       console.log({errornya: e.response});

@@ -1,3 +1,4 @@
+/* eslint-disable no-sparse-arrays */
 import {
   View,
   Text,
@@ -8,6 +9,7 @@ import {
   Dimensions,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -33,17 +35,16 @@ export default function NewPost() {
   const [caption, setCaption] = useState('');
 
   const handleChoosePhoto = () => {
-    console.log('handleChoosePhoto');
     setLoading(true);
     launchImageLibrary({noData: true}, response => {
       if (response) {
         const body = {
-          name: response.assets[0].fileName,
-          type: response.assets[0].type,
+          name: response.assets?.[0].fileName,
+          type: response.assets?.[0].type,
           uri:
             Platform.OS === 'ios'
-              ? response.assets[0].uri.replace('file://', '')
-              : response.assets[0].uri,
+              ? response.assets?.[0].uri.replace('file://', '')
+              : response.assets?.[0].uri,
         };
         cloudinaryUpload(body);
       }
@@ -93,6 +94,12 @@ export default function NewPost() {
         picture_path: photo,
         email: dataUser.email,
       };
+      if (!body.picture_path) {
+        return Alert.alert('Posting Gagal', 'Uplaod Foto Terlebih Dahulu', [
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+          ,
+        ]);
+      }
       const res = await axios.post(
         'https://imtiket.com/rest_api/rest-server/journey',
         body,
@@ -100,7 +107,7 @@ export default function NewPost() {
           headers: {'X-API-KEY': 'api123'},
         },
       );
-      console.log({res, body});
+      console.log({res, body, dataUser});
       if (res.data.status === true) {
         dispatch(DataJourney(dataUser.email));
         navigation.navigate('Tab');
@@ -211,6 +218,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'grey',
+    color: '#000000',
   },
   login: {
     fontSize: 13,

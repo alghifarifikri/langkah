@@ -2,7 +2,7 @@
 import axios from 'axios';
 import {DataJourney} from '.';
 
-const {BASE_URL, REACT_APP_API_KEY} = process.env;
+const {REACT_APP_BASE_URL, REACT_APP_API_KEY} = process.env;
 
 export default function Follow(email, email_user, status) {
   return async dispatch => {

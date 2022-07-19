@@ -2,7 +2,7 @@
 import axios from 'axios';
 import {Alert} from 'react-native';
 
-const {BASE_URL, REACT_APP_API_KEY} = process.env;
+const {REACT_APP_BASE_URL, REACT_APP_API_KEY} = process.env;
 
 export default function Register(body) {
   return async dispatch => {

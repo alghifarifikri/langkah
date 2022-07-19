@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const {BASE_URL, REACT_APP_API_KEY} = process.env;
+const {REACT_APP_BASE_URL, REACT_APP_API_KEY} = process.env;
 
 export default function REF_GetSubDistrict(param) {
   return async dispatch => {

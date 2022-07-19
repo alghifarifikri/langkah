@@ -8,8 +8,7 @@ import {
   Dimensions,
   TouchableOpacity,
   FlatList,
-  Modal,
-  ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -31,7 +30,7 @@ import {
   Likes,
 } from '../../Redux/Action';
 import moment from 'moment';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useIsFocused} from '@react-navigation/native';
 import ModalCustom from '../../Component/Form/ModalCustom';
 
 const win = Dimensions.get('window');
@@ -39,6 +38,7 @@ const ratio = win.width / 541;
 
 export default function Journey() {
   const dispatch = useDispatch();
+  const isFocused = useIsFocused();
   const navigation = useNavigation();
   const data = useSelector(state => state.Journey.data);
   const loading = useSelector(state => state.Journey.loading);
@@ -46,19 +46,32 @@ export default function Journey() {
   const request = useSelector(state => state.Request.data);
   const notif = useSelector(state => state.Notification.data);
 
+  const backAction = () => {
+    BackHandler.exitApp();
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      BackHandler.addEventListener('hardwareBackPress', backAction);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', backAction);
+    }
+  }, [isFocused]);
+
   useEffect(() => {
     dispatch(DataProfile());
   }, []);
 
   useEffect(() => {
-    if (dataUser.email) {
+    if (dataUser?.email) {
       dispatch(DataJourney(dataUser.email));
       dispatch(DataRequest(dataUser.email));
       dispatch(DataNotification(dataUser.email));
       dispatch(DataFollowers(dataUser.email));
       dispatch(DataMilesStones(dataUser.email));
     }
-  }, [dataUser.email]);
+  }, [dataUser?.email]);
 
   function truncate(input) {
     if (input.length > 150) {
@@ -108,7 +121,7 @@ export default function Journey() {
                     {moment(item.created_date).fromNow()}
                   </Text>
                 </View>
-                {item.created_by !== dataUser.email && (
+                {item.created_by !== dataUser?.email && (
                   <TouchableOpacity
                     style={styles.followIcon}
                     onPress={() => following(item.created_by, 'follow')}>

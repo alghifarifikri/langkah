@@ -1,4 +1,11 @@
-import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Platform,
+} from 'react-native';
 import React from 'react';
 import LeftHeader from '../../../Component/Global/LeftHeader';
 import InputCustom from '../../../Component/Form/InputCustom';
@@ -14,6 +21,8 @@ export default function Form({
   loginFacebook = () => {},
   onChange = () => {},
   disabled = false,
+  disabled2 = false,
+  disabled3 = false,
 }) {
   const navigation = useNavigation();
 
@@ -68,7 +77,11 @@ export default function Form({
         keyJson="email"
         onChange={text => onChange(text)}
         value={val.email}
-        style={{label: styles.label, input: styles.input, view: styles.view}}
+        style={{
+          label: styles.label,
+          input: Platform.OS === 'android' ? styles.input : styles.inputIphone,
+          view: styles.view,
+        }}
       />
       <InputPassword
         type="password"
@@ -104,18 +117,18 @@ export default function Form({
       <ButtonCustom
         label={labelFacebook()}
         onClick={() => loginFacebook()}
-        disabled={disabled}
+        disabled={disabled3}
         style={{
-          button: disabled ? styles.buttonLoading : styles.buttonFacebook,
+          button: disabled3 ? styles.buttonLoading : styles.buttonFacebook,
           text: styles.login,
         }}
       />
       <ButtonCustom
         label={labelGoogle()}
         onClick={() => loginGoogle()}
-        disabled={disabled}
+        disabled={disabled2}
         style={{
-          button: disabled ? styles.buttonLoading : styles.buttonGoogle,
+          button: disabled2 ? styles.buttonLoading : styles.buttonGoogle,
           text: styles.login,
         }}
       />
@@ -164,11 +177,6 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   buttonLogin: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.9,
-    elevation: 6,
-    shadowRadius: 15,
-    shadowOffset: {width: 56, height: 13},
     width: '100%',
     backgroundColor: '#F65431',
     alignItems: 'center',
@@ -177,11 +185,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonLoading: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.9,
-    elevation: 6,
-    shadowRadius: 15,
-    shadowOffset: {width: 56, height: 13},
     width: '100%',
     backgroundColor: 'grey',
     alignItems: 'center',
@@ -190,11 +193,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonApple: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.9,
-    elevation: 6,
-    shadowRadius: 15,
-    shadowOffset: {width: 56, height: 13},
     width: '100%',
     backgroundColor: '#000000',
     alignItems: 'center',
@@ -203,11 +201,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonFacebook: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.9,
-    elevation: 6,
-    shadowRadius: 15,
-    shadowOffset: {width: 56, height: 13},
     width: '100%',
     backgroundColor: '#3B5998',
     alignItems: 'center',
@@ -216,11 +209,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonGoogle: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.9,
-    elevation: 6,
-    shadowRadius: 15,
-    shadowOffset: {width: 56, height: 13},
     width: '100%',
     backgroundColor: '#CDCDCD',
     alignItems: 'center',
@@ -262,6 +250,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingLeft: 20,
     paddingRight: 20,
+    borderRadius: 10,
+    color: '#000000',
+  },
+  inputIphone: {
+    height: 40,
+    borderWidth: 1,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 10,
     borderRadius: 10,
     color: '#000000',
   },

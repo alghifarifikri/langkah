@@ -18,6 +18,14 @@ import Follow from './Follow';
 import Followers from './Followers';
 import MilesStone from './MilesStone';
 import Event from './Event';
+import REF_Distance from './REF_Distance';
+import REF_Category from './REF_Category';
+import REF_Option from './REF_Option';
+import REF_Question from './REF_Question';
+import REF_AddOns from './REF_AddOns';
+import Payment from './Payment';
+import REF_Jersey from './REF_Jersey';
+import CekEmail from './CekEmail';
 
 const reducers = combineReducers({
   REF_Nationality,
@@ -39,6 +47,14 @@ const reducers = combineReducers({
   Followers,
   MilesStone,
   Event,
+  REF_Distance,
+  REF_Category,
+  REF_Option,
+  REF_Question,
+  REF_AddOns,
+  Payment,
+  CekEmail,
+  REF_Jersey,
 });
 
 export default reducers;

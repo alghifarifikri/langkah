@@ -21,7 +21,7 @@ export default {
   group: 'Group',
   registermethod: 'Register Method',
   eventregister: 'Event Register',
-  community: 'Community',
+  community: 'Event Name',
   distance: 'Distance',
   selectdistance: 'Select Distance',
   category: 'Category',

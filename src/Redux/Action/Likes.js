@@ -2,7 +2,7 @@
 import axios from 'axios';
 import {DataJourney} from '.';
 
-const {BASE_URL, REACT_APP_API_KEY} = process.env;
+const {REACT_APP_BASE_URL, REACT_APP_API_KEY} = process.env;
 
 export default function Likes(id, likeStatus, dataUser) {
   return async dispatch => {

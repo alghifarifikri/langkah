@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, TextInput} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import React from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 
@@ -12,6 +12,7 @@ export default function SelectCustom({
   value = '',
   keyJson = '',
   item = [],
+  disabled = false,
   placeholders = '',
 }) {
   return (
@@ -26,9 +27,10 @@ export default function SelectCustom({
             onChangeParam(val);
           }
         }}
-        style={styles}
+        style={disabled ? stylesDisabled : styles}
         useNativeAndroidPickerStyle={false}
         items={item}
+        disabled={disabled}
       />
     </View>
   );
@@ -45,5 +47,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     marginTop: -5,
     color: 'black',
+  },
+});
+const stylesDisabled = StyleSheet.create({
+  inputIOS: {
+    height: 40,
+    borderBottomWidth: 1,
+    marginTop: -5,
+  },
+  inputAndroid: {
+    height: 40,
+    borderBottomWidth: 1,
+    marginTop: -5,
+    color: 'black',
+    backgroundColor: '#E9ECEF',
   },
 });

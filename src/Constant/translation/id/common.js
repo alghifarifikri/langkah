@@ -21,7 +21,7 @@ export default {
   group: 'Grup',
   registermethod: 'Metode Pendaftaran',
   eventregister: 'Pendaftaran Acara',
-  community: 'Komunitas',
+  community: 'Nama Acara',
   distance: 'Jarak',
   selectdistance: 'Pilih Jarak',
   category: 'Kategori',

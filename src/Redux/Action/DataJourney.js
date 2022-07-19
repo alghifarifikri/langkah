@@ -1,7 +1,7 @@
 /* eslint-disable no-sparse-arrays */
 import axios from 'axios';
 
-const {BASE_URL, REACT_APP_API_KEY} = process.env;
+const {REACT_APP_BASE_URL, REACT_APP_API_KEY} = process.env;
 
 export default function DataJourney(body) {
   return async dispatch => {
@@ -13,6 +13,7 @@ export default function DataJourney(body) {
           headers: {'X-API-KEY': 'api123'},
         },
       );
+      console.log({REACT_APP_BASE_URL, REACT_APP_API_KEY, env: process.env});
       if (response.data.status === true) {
         const {data} = response.data;
         dispatch(SetDataJourney(data));

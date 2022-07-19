@@ -8,6 +8,7 @@ import {useNavigation} from '@react-navigation/native';
 export default function IndividuModal({
   visible = false,
   handleVisible = () => {},
+  data = {},
 }) {
   const {t} = useTranslation();
   const navigation = useNavigation();
@@ -49,6 +50,7 @@ export default function IndividuModal({
                 handleVisible(false, 'Individu');
                 navigation.navigate('FormRegister', {
                   methodRegist: val.methodRegist,
+                  data: data,
                 });
                 setVal({});
               }}

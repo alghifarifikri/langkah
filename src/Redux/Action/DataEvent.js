@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const {BASE_URL, REACT_APP_API_KEY} = process.env;
+const {REACT_APP_BASE_URL, REACT_APP_API_KEY} = process.env;
 
 export default function DataEvent(body) {
   return async dispatch => {
@@ -19,7 +19,12 @@ export default function DataEvent(body) {
       }
     } catch (e) {
       console.log({errornya: e.response});
-      dispatch(SetDataEvent([]));
+      if (e.response.data.status === true) {
+        const temp = e.response.data.data;
+        dispatch(SetDataEvent(temp));
+      } else {
+        dispatch(SetDataEvent([]));
+      }
     } finally {
       dispatch(SetLoading(false));
     }
