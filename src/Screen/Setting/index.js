@@ -157,6 +157,8 @@ export default function Setting() {
                       ? handleClick(true, item.label, '')
                       : item.label === 'Language'
                       ? handleClick(true, item.label, item.value)
+                      : item.label === 'History Payment'
+                      ? handleClick(true, item.label, item.value)
                       : null;
                   }}>
                   {item.value ? (

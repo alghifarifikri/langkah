@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const {REACT_APP_BASE_URL, REACT_APP_API_KEY} = process.env;
-
 export default function DataFollowers(body) {
   return async dispatch => {
     dispatch(SetLoading(true));

@@ -15,6 +15,8 @@ export default function NotifHeader({label = ''}) {
         label === t('common:language') ||
         label === t('common:eventregister') ||
         label === t('common:payment') ||
+        label === t('common:family') ||
+        label === 'Group' ||
         label === '') && (
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <FontAwesome name="chevron-left" color={'#000000'} size={23} />

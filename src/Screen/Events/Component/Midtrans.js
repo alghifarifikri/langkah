@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
 import {WebView} from 'react-native-webview';
 import {
@@ -62,7 +63,12 @@ const Midtrans = ({route, navigation}) => {
       BackHandler.removeEventListener('hardwareBackPress', backAction);
   }, []);
 
-  // return <WebView source={{uri: redirect_url}} />;
+  const onMessage = data => {
+    if (data.nativeEvent.data === 'selesai') {
+      navigation.navigate('Events');
+    }
+  };
+
   return (
     <ScrollView
       accessibilityLabel="BannerDetailView"
@@ -76,18 +82,7 @@ const Midtrans = ({route, navigation}) => {
           }}
         />
       }>
-      {/* {loading ? (
-        <ModalCustom visible={loading} />
-      ) : (
-        <WebView
-          // ref={webref => (web = webref)}
-          source={{uri: redirect_url}}
-        />
-      )} */}
-      <WebView
-        // ref={webref => (web = webref)}
-        source={{uri: redirect_url}}
-      />
+      <WebView source={{uri: redirect_url}} onMessage={onMessage} />
     </ScrollView>
   );
 };

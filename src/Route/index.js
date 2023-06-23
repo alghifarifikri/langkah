@@ -34,6 +34,7 @@ import {useSelector} from 'react-redux';
 import EditProfile from '../Screen/Setting/Form/EditProfile';
 import Midtrans from '../Screen/Events/Component/Midtrans';
 import Thanks from '../Screen/Events/Component/Thanks';
+import FormFamily from '../Screen/Events/Component/FormFamily';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -150,6 +151,7 @@ function stackScreen() {
         <Stack.Screen name="NewPost" component={NewPost} />
         <Stack.Screen name="Detail" component={Detail} />
         <Stack.Screen name="FormRegister" component={FormRegister} />
+        <Stack.Screen name="FormFamily" component={FormFamily} />
         <Stack.Screen name="Payment" component={Payment} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="Midtrans" component={Midtrans} />

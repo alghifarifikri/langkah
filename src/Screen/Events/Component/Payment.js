@@ -1,7 +1,15 @@
+/* eslint-disable no-alert */
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-sparse-arrays */
 /* eslint-disable react-hooks/exhaustive-deps */
-import {View, ScrollView, StyleSheet, Alert, Dimensions} from 'react-native';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  Dimensions,
+  RefreshControl,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import NotifHeader from '../../../Component/Global/NotifHeader';
@@ -13,23 +21,33 @@ import {DataPayment} from '../../../Redux/Action';
 import axios from 'axios';
 import {HEADER_MIDTRANS, URL_MIDTRANS} from '../../../Utils/Url';
 import moment from 'moment';
+import InputCustom from '../../../Component/Form/InputCustom';
+import ModalCustom from '../../../Component/Form/ModalCustom';
 
 const win = Dimensions.get('window');
 const ratio = win.width / 541;
 
 export default function Payment({route, navigation}) {
-  const {data, id, event_name, discount_voucher, setupPrice} = route?.params;
+  const {data, id, eventId, event_name, setupPrice, url} = route?.params;
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const {t} = useTranslation();
   const paymentData = useSelector(state => state.Payment.data);
   const dataUser = useSelector(state => state.Profile.data);
   const refJersey = useSelector(state => state.REF_Jersey.data);
-  const [payment, setDataPayment] = useState(paymentData);
+  // const [payment, setDataPayment] = useState(paymentData);
+  const [val, setVal] = useState({});
+  const [total, setTotal] = useState(paymentData?.[0]?.grandTotal);
+  const [disc, setDisc] = useState('0');
+  const [isVoucher, setIsVoucher] = useState(false);
 
   useEffect(() => {
-    dispatch(DataPayment(id));
-    setDataPayment(paymentData);
+    dispatch(DataPayment(url));
+  }, []);
+
+  useEffect(() => {
+    setTotal(paymentData?.[0]?.grandTotal);
+    setDisc(paymentData?.[0]?.disc);
   }, [paymentData]);
 
   const rupiahFormat = e => {
@@ -40,41 +58,95 @@ export default function Payment({route, navigation}) {
     return rupiah;
   };
 
-  let priceEvent = setupPrice !== null ? setupPrice : payment[0]?.price_event;
-  let total = 0;
-
-  if (discount_voucher) {
-    if (Number(discount_voucher.nominal > 0)) {
-      priceEvent =
-        Number(priceEvent) - Number(discount_voucher.nominal);
-      total = Number(payment[0]?.grandTotal) - Number(discount_voucher.nominal);
-    } else if (Number(discount_voucher.percent > 0)) {
-      priceEvent =
-        Number(priceEvent) -
-        Number(priceEvent) *
-          (Number(discount_voucher.percent) / 100);
-      total =
-        Number(payment[0]?.grandTotal) -
-        Number(payment[0]?.grandTotal) *
-          (Number(discount_voucher.percent) / 100);
+  const voucherValidate = async () => {
+    try {
+      const distance = data?.distance_id || paymentData?.[0]?.distance_id;
+      const category = data?.category_id || paymentData?.[0]?.category_id;
+      const option = data?.option_id || paymentData?.[0]?.option_id;
+      const res = await axios.get(
+        `https://imtiket.com/rest_api/rest-server/Voucher/cekVoucher?event_id=${eventId}&distance_id=${distance}&category_id=${category}&option_id=${option}`,
+        {
+          headers: {'X-API-KEY': 'api123'},
+        },
+      );
+      if (res.data.status === 'true') {
+        return res.data.message;
+      }
+    } catch (e) {
+      console.log({e: e});
+      if (e.response.data.status === 'false') {
+        return e.response.data.message;
+      }
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
-  } else {
-    priceEvent = Number(priceEvent);
-    total = Number(payment[0]?.grandTotal);
-  }
+  };
+
+  const voucherCheck = async (voucher, amount) => {
+    setLoading(true);
+    try {
+      const distance = data?.distance_id || paymentData?.[0]?.distance_id;
+      const category = data?.category_id || paymentData?.[0]?.category_id;
+      const option = data?.option_id || paymentData?.[0]?.option_id;
+      const res = await axios.get(
+        `https://imtiket.com/rest_api/rest-server/Voucher/getDiscVoucher?event_id=${eventId}&distance_id=${distance}&category_id=${category}&option_id=${option}&total_amount=${amount}&voucher_code=${voucher}`,
+        {
+          headers: {'X-API-KEY': 'api123'},
+        },
+      );
+      if (res.data.status === true) {
+        Alert.alert('Success', res.data.message, [
+          {
+            text: 'OK',
+            onPress: () => {
+              setTotal(res.data.total_amount);
+              setDisc(res.data.disc_value);
+              setLoading(false);
+              setIsVoucher(true);
+            },
+          },
+          ,
+        ]);
+      }
+    } catch (e) {
+      console.log({e: e});
+      if (e.response.data.status === false) {
+        Alert.alert('Failed', e.response.data.message, [
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+          ,
+        ]);
+      }
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const pay = async () => {
     setLoading(true);
-    if (payment[0]?.price_event === '0') {
+    if (paymentData[0]?.price_event === '0') {
       return Alert.alert(
         'Gagal Bayar',
         'Event Fee Belum Diatur, Hubungi Admin!',
         [{text: 'OK', onPress: () => console.log('OK Pressed')}, ,],
       );
     }
+
+    const validate = await voucherValidate();
+    let priceEvent =
+      setupPrice !== null
+        ? setupPrice
+        : paymentData[0]?.price_event;
+
+    console.log({ validate, isVoucher });
+    if (isVoucher === false && validate === 'Please firstly enter and activate the voucher correctly. (Silahkan masukkan dan aktivasi voucher dengan benar terlebih dahulu)') {
+      return alert(validate);
+    }
+
     const payload = {
       transaction_details: {
-        order_id: payment[0]?.orderid,
+        order_id: paymentData[0]?.orderid,
         gross_amount: total,
       },
       credit_card: {
@@ -91,16 +163,18 @@ export default function Payment({route, navigation}) {
       item_details: [
         {
           id: event_name,
-          price: priceEvent || 0,
+          price: Number(priceEvent) || 0,
           quantity: 1,
-          name: payment[0]?.distance_name.concat(payment[0]?.category_name),
+          name: paymentData[0]?.distance_name.concat(
+            paymentData[0]?.category_name,
+          ),
           brand: 'IMRR',
           category: '',
           merchant_name: 'IMRR',
         },
         {
           id: event_name,
-          price: Number(payment[0]?.disc) * -1 || 0,
+          price: Number(disc) * -1 || 0,
           quantity: 1,
           name: 'Voucher / Disc Event',
           brand: 'IMRR',
@@ -109,7 +183,7 @@ export default function Payment({route, navigation}) {
         },
         {
           id: event_name,
-          price: Number(payment[0]?.admin_fee) || 0,
+          price: Number(paymentData[0]?.admin_fee) || 0,
           quantity: 1,
           name: 'Admin Fee Event',
           brand: 'IMRR',
@@ -118,7 +192,7 @@ export default function Payment({route, navigation}) {
         },
         {
           id: event_name,
-          price: Number(payment[0]?.amount_addon) || 0,
+          price: Number(paymentData[0]?.amount_addon) || 0,
           quantity: 1,
           name: 'Add On',
           brand: 'IMRR',
@@ -127,7 +201,7 @@ export default function Payment({route, navigation}) {
         },
         {
           id: event_name,
-          price: Number(payment[0]?.admin_fee_addon) || 0,
+          price: Number(paymentData[0]?.admin_fee_addon) || 0,
           quantity: 1,
           name: 'Admin Fee Add On',
           brand: 'IMRR',
@@ -136,7 +210,7 @@ export default function Payment({route, navigation}) {
         },
         {
           id: event_name,
-          price: Number(payment[0]?.shipping_fee) || 0,
+          price: Number(paymentData[0]?.shipping_fee) || 0,
           quantity: 1,
           name: 'Shipping Fee',
           brand: 'IMRR',
@@ -154,16 +228,15 @@ export default function Payment({route, navigation}) {
       },
     };
 
-    console.log({payload});
     try {
       const res = await axios.post(URL_MIDTRANS + 'transactions', payload, {
         headers: HEADER_MIDTRANS,
       });
       if (res.status === 201) {
-        const url = res.data.redirect_url;
+        const mid_url = res.data.redirect_url;
         navigation.navigate('Midtrans', {
-          redirect_url: url,
-          order_id: payment[0]?.orderid,
+          redirect_url: mid_url,
+          order_id: paymentData[0]?.orderid,
         });
       }
     } catch (e) {
@@ -174,69 +247,80 @@ export default function Payment({route, navigation}) {
     }
   };
 
-  const validateDiscount = e => {
-    if (discount_voucher) {
-      if (Number(discount_voucher.nominal > 0)) {
-        return Number(e) - Number(discount_voucher.nominal);
-      } else if (Number(discount_voucher.percent > 0)) {
-        return Number(e) - Number(e) * (Number(discount_voucher.percent) / 100);
-      }
-    } else {
-      return Number(e);
-    }
+  const onChange = e => {
+    const temp = {
+      ...val,
+      ...e,
+    };
+    setVal(temp);
   };
 
   return (
     <View style={styles.container}>
       <NotifHeader label={t('common:payment')} />
       <View style={styles.line} />
-      <ScrollView style={styles.scroll}>
+      <ScrollView
+        style={styles.scroll}
+        refreshControl={
+          <RefreshControl
+            refreshing={false}
+            onRefresh={() => {
+              dispatch(DataPayment(url));
+              setIsVoucher(false);
+              setVal({});
+            }}
+          />
+        }>
         <LabelCustom
           type="fullname"
           label={'Order ID'}
           keyJson="orderid"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={payment[0]?.orderid}
+          value={paymentData[0]?.orderid}
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
             view: styles.view2,
           }}
         />
-        <LabelCustom
-          type="fullname"
-          label={'No Reg'}
-          keyJson="generatedid"
-          disabled={true}
-          // onChange={text => onChange(text)}
-          value={payment[0]?.generatedid}
-          style={{
-            label: styles.label,
-            input: styles.inputDisabled2,
-            view: styles.view2,
-          }}
-        />
-        <LabelCustom
-          type="fullname"
-          label={'Email'}
-          keyJson="email_pendaftar"
-          disabled={true}
-          // onChange={text => onChange(text)}
-          value={payment[0]?.email_pendaftar}
-          style={{
-            label: styles.label,
-            input: styles.inputDisabled2,
-            view: styles.view2,
-          }}
-        />
+        {paymentData[0]?.generatedid && (
+          <LabelCustom
+            type="fullname"
+            label={'No Reg'}
+            keyJson="generatedid"
+            disabled={true}
+            // onChange={text => onChange(text)}
+            value={paymentData[0]?.generatedid}
+            style={{
+              label: styles.label,
+              input: styles.inputDisabled2,
+              view: styles.view2,
+            }}
+          />
+        )}
+        {paymentData[0]?.email_pendaftar && (
+          <LabelCustom
+            type="fullname"
+            label={'Email'}
+            keyJson="email_pendaftar"
+            disabled={true}
+            // onChange={text => onChange(text)}
+            value={paymentData[0]?.email_pendaftar}
+            style={{
+              label: styles.label,
+              input: styles.inputDisabled2,
+              view: styles.view2,
+            }}
+          />
+        )}
         <LabelCustom
           type="fullname"
           label={t('common:distance')}
           keyJson="distance_name"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={payment[0]?.distance_name}
+          value={paymentData[0]?.distance_name}
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
@@ -249,7 +333,7 @@ export default function Payment({route, navigation}) {
           keyJson="category_name"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={payment[0]?.category_name}
+          value={paymentData[0]?.category_name}
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
@@ -262,38 +346,35 @@ export default function Payment({route, navigation}) {
           keyJson="option_name"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={payment[0]?.option_name}
+          value={paymentData[0]?.option_name}
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
             view: styles.view2,
           }}
         />
-        <SelectLabelCustom
-          label={t('common:jersey')}
-          placeholders={t('common:selectdistance')}
-          keyJson="jersey_id"
-          disabled={true}
-          // onChange={text => onChange(text)}
-          // onChangeParam={e => onChangeCategory(e)}
-          value={data?.jersey_id}
-          style={{
-            label: styles.label,
-            input: styles.inputDisabled2,
-            view: styles.view2,
-          }}
-          item={refJersey}
-        />
+        {data?.jersey_id && (
+          <SelectLabelCustom
+            label={t('common:jersey')}
+            placeholders={t('common:selectdistance')}
+            keyJson="jersey_id"
+            disabled={true}
+            value={data?.jersey_id}
+            style={{
+              label: styles.label,
+              input: styles.inputDisabled2,
+              view: styles.view2,
+            }}
+            item={refJersey}
+          />
+        )}
         <LabelCustom
           type="fullname"
           label={t('common:eventfee')}
           keyJson="eventfee"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={
-            rupiahFormat(validateDiscount(payment[0]?.price_event)) ||
-            rupiahFormat('0')
-          }
+          value={rupiahFormat(paymentData[0]?.price_event) || rupiahFormat('0')}
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
@@ -306,7 +387,7 @@ export default function Payment({route, navigation}) {
           keyJson="admin_fee"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={rupiahFormat(payment[0]?.admin_fee) || rupiahFormat('0')}
+          value={rupiahFormat(paymentData[0]?.admin_fee) || rupiahFormat('0')}
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
@@ -319,7 +400,9 @@ export default function Payment({route, navigation}) {
           keyJson="amount_addon"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={rupiahFormat(payment[0]?.amount_addon) || rupiahFormat('0')}
+          value={
+            rupiahFormat(paymentData[0]?.amount_addon) || rupiahFormat('0')
+          }
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
@@ -332,7 +415,9 @@ export default function Payment({route, navigation}) {
           keyJson="admin_fee_addon"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={rupiahFormat(payment[0]?.admin_fee_addon) || rupiahFormat('0')}
+          value={
+            rupiahFormat(paymentData[0]?.admin_fee_addon) || rupiahFormat('0')
+          }
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
@@ -345,7 +430,9 @@ export default function Payment({route, navigation}) {
           keyJson="shipping_fee"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={rupiahFormat(payment[0]?.shipping_fee) || rupiahFormat('0')}
+          value={
+            rupiahFormat(paymentData[0]?.shipping_fee) || rupiahFormat('0')
+          }
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
@@ -360,8 +447,8 @@ export default function Payment({route, navigation}) {
           // onChange={text => onChange(text)}
           value={
             rupiahFormat(
-              Number(payment[0]?.admin_fee) +
-                Number(payment[0]?.admin_fee_addon),
+              Number(paymentData[0]?.admin_fee) +
+                Number(paymentData[0]?.admin_fee_addon),
             ).toString() || rupiahFormat('0')
           }
           style={{
@@ -389,24 +476,37 @@ export default function Payment({route, navigation}) {
           keyJson="disc"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={payment[0]?.disc || '0'}
+          value={rupiahFormat(disc) || rupiahFormat('0')}
           style={{
             label: styles.label,
             input: styles.inputDisabled2,
             view: styles.view2,
           }}
         />
+        <View style={styles.line2} />
         <LabelCustom
           type="fullname"
           label={t('common:grandtotal')}
           keyJson="grandTotal"
           disabled={true}
           // onChange={text => onChange(text)}
-          value={rupiahFormat(validateDiscount(payment[0]?.grandTotal))}
+          value={rupiahFormat(total)}
+          style={{
+            label: styles.labelTotal,
+            input: styles.inputDisabled3,
+            view: styles.view2,
+          }}
+        />
+        <InputCustom
+          type="fullname"
+          label="Voucher"
+          keyJson="voucher_code"
+          onChange={text => onChange(text)}
+          value={val.voucher_code}
           style={{
             label: styles.label,
-            input: styles.inputDisabled2,
-            view: styles.view2,
+            input: styles.input,
+            view: styles.view,
           }}
         />
         {/* <View style={styles.check}>
@@ -425,6 +525,17 @@ export default function Payment({route, navigation}) {
         </View> */}
         <View>
           <ButtonCustom
+            label={'Click to Activate'}
+            onClick={() =>
+              voucherCheck(val.voucher_code, paymentData[0]?.grandTotal)
+            }
+            disabled={loading}
+            style={{
+              button: !loading ? styles.buttonActivate : styles.buttonLoading,
+              text: styles.login,
+            }}
+          />
+          <ButtonCustom
             label={t('common:register')}
             onClick={() => pay()}
             disabled={loading}
@@ -435,6 +546,7 @@ export default function Payment({route, navigation}) {
           />
         </View>
       </ScrollView>
+      <ModalCustom visible={loading || paymentData.length === 0} />
     </View>
   );
 }
@@ -455,6 +567,12 @@ const styles = StyleSheet.create({
   line: {
     borderBottomWidth: 1,
     borderBottomColor: '#F1F1F1',
+  },
+  line2: {
+    borderBottomWidth: 2,
+    borderBottomColor: 'black',
+    marginTop: 10,
+    marginBottom: 20,
   },
   row: {
     flexDirection: 'row',
@@ -497,6 +615,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     fontWeight: 'bold',
   },
+  labelTotal: {
+    color: '#000000',
+    marginBottom: 5,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   input: {
     height: 35,
     borderBottomWidth: 1,
@@ -515,6 +639,14 @@ const styles = StyleSheet.create({
     marginTop: -5,
     color: '#000000',
     marginLeft: 'auto',
+  },
+  inputDisabled3: {
+    height: 35,
+    marginTop: -5,
+    color: '#000000',
+    marginLeft: 'auto',
+    fontWeight: 'bold',
+    // fontSize: 16,
   },
   view: {
     marginBottom: 10,
@@ -552,6 +684,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F65431',
     alignItems: 'center',
     marginBottom: 30,
+    padding: 13,
+    borderRadius: 10,
+  },
+  buttonActivate: {
+    width: '100%',
+    backgroundColor: 'blue',
+    alignItems: 'center',
+    marginBottom: 10,
     padding: 13,
     borderRadius: 10,
   },

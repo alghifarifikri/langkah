@@ -18,6 +18,7 @@ export default {
   ranks: 'Ranks',
   individu: 'Individu',
   collective: 'Collective',
+  family: 'Family',
   group: 'Group',
   registermethod: 'Register Method',
   eventregister: 'Event Register',
@@ -45,4 +46,5 @@ export default {
   register: 'Register',
   comment: 'Commented Your Post',
   like: 'Liked Your Post',
+  history: 'History Payment',
 };

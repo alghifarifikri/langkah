@@ -124,8 +124,15 @@ export default function Progress() {
     active === 'Miles Stone' ? dataMileStone : dataPersonalBest;
   const tab = ['Miles Stone', 'Personal Best'];
   return (
-    <View>
-      <View style={styles.tab}>
+    <View style={styles.imageSoon2}>
+      <Image
+        style={styles.imageSoon}
+        resizeMode="cover"
+        source={{
+          uri: 'https://media.istockphoto.com/id/1273109788/vector/coming-soon-isolated-vector-icon-paper-style-promotion-sign-start-a-new-business-design.jpg?s=612x612&w=0&k=20&c=0APH6QCc371SuCEYLspgp6oh-tE5-rvbK0dzLMRmJGA=',
+        }}
+      />
+      {/* <View style={styles.tab}>
         {tab?.map((item, index) => (
           <TouchableOpacity
             onPress={() => setActive(item)}
@@ -167,7 +174,7 @@ export default function Progress() {
             />
           </TouchableOpacity>
         </View>
-      ))}
+      ))} */}
     </View>
   );
 }
@@ -236,5 +243,15 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     borderTopRightRadius: 20,
     borderBottomRightRadius: 20,
+  },
+  imageSoon: {
+    height: width * 0.18 * 2.16,
+    aspectRatio: 1,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    alignItems: 'center',
+  },
+  imageSoon2: {
+    alignItems: 'center',
   },
 });

@@ -188,7 +188,7 @@ export default function Journey() {
         onRefresh={() => dispatch(DataJourney(dataUser.email))}
         refreshing={loading}
       />
-      <FloatingButton onPress={() => navigation.navigate('NewPost')} />
+      {/* <FloatingButton onPress={() => navigation.navigate('NewPost')} /> */}
       <ModalCustom visible={loading} />
     </View>
   );

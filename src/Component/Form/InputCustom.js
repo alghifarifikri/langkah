@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, TextInput} from 'react-native';
+import {View, Text, TextInput} from 'react-native';
 import React from 'react';
 
 export default function InputCustom({
@@ -13,6 +13,9 @@ export default function InputCustom({
   placeholder = '',
   disabled = false,
 }) {
+  const replaceRange = (s, start, end, substitute) => {
+    return s.substring(0, start) + '•••••••••' + s.substring(end);
+  };
   return (
     <View style={style.view}>
       <Text style={style.label}>{label}</Text>
@@ -21,9 +24,15 @@ export default function InputCustom({
         placeholder={placeholder}
         keyboardType={`${keyboardType}`}
         style={style.input}
-        value={value}
+        value={
+          type === 'mobileHide'
+            ? replaceRange(value, 0, 9)
+            : type === 'addressHide' && disabled
+            ? value?.replace(/./g, '•')
+            : value
+        }
         multiline
-        numberOfLines={type === 'address' ? 4 : 1}
+        numberOfLines={type === 'address' || type === 'addressHide' ? 4 : 1}
         editable={!disabled}
         onChangeText={text => {
           onChange({[keyJson]: text});

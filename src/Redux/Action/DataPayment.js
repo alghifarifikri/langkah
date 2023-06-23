@@ -1,17 +1,13 @@
 import axios from 'axios';
 
-const {REACT_APP_BASE_URL, REACT_APP_API_KEY} = process.env;
-
 export default function DataPayment(body) {
   return async dispatch => {
     dispatch(SetLoading(true));
     try {
-      const response = await axios.get(
-        `https://imtiket.com/rest_api/rest-server/registrasi?generated_id=${body}`,
-        {
-          headers: {'X-API-KEY': 'api123'},
-        },
-      );
+      const response = await axios.get(body, {
+        headers: {'X-API-KEY': 'api123'},
+      });
+      console.log({response});
       if (response.data.status === true) {
         const {data} = response.data;
         dispatch(SetDataPayment(data));

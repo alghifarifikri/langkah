@@ -41,6 +41,8 @@ export default function Profiles() {
     dispatch(DataMilesStones(dataUser.email));
   }, []);
 
+  console.log({dataUser});
+
   return (
     <View style={styles.container}>
       <ProfileHeader />

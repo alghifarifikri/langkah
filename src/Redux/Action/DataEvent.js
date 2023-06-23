@@ -12,13 +12,12 @@ export default function DataEvent(body) {
           headers: {'X-API-KEY': 'api123'},
         },
       );
-      console.log({response});
       if (response.data.status === true) {
         const {data} = response.data;
         dispatch(SetDataEvent(data));
       }
     } catch (e) {
-      console.log({errornya: e.response});
+      console.log({errornya: e});
       if (e.response.data.status === true) {
         const temp = e.response.data.data;
         dispatch(SetDataEvent(temp));

@@ -2,9 +2,15 @@ import {TouchableOpacity, StyleSheet, View, Text} from 'react-native';
 import React from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
+import {useTranslation} from 'react-i18next';
 
-export default function HeaderSetting({label = '', onBack = () => {}}) {
+export default function HeaderSetting({
+  label = '',
+  onBack = () => {},
+  onSave = () => {},
+}) {
   const navigation = useNavigation();
+  const {t} = useTranslation();
 
   return (
     <View>
@@ -15,8 +21,10 @@ export default function HeaderSetting({label = '', onBack = () => {}}) {
         <View>
           <Text style={styles.back}>{label}</Text>
         </View>
-        {label !== 'Language' && label !== 'Bahasa' ? (
-          <TouchableOpacity>
+        {label !== 'Language' &&
+        label !== 'Bahasa' &&
+        label !== t('common:history') ? (
+          <TouchableOpacity onPress={() => onSave()}>
             <Text style={styles.save}>Save</Text>
           </TouchableOpacity>
         ) : (

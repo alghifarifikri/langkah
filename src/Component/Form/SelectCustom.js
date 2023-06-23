@@ -3,7 +3,7 @@ import React from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 
 export default function SelectCustom({
-  type = '',
+  type = 'text',
   label = '',
   style = {},
   keyboardType = '',
@@ -29,7 +29,15 @@ export default function SelectCustom({
         }}
         style={disabled ? stylesDisabled : styles}
         useNativeAndroidPickerStyle={false}
-        items={item}
+        items={
+          type === 'password'
+            ? item.map(el =>
+                el.value === value
+                  ? {...el, label: el.label.replace(/./g, '•')}
+                  : el,
+              )
+            : item
+        }
         disabled={disabled}
       />
     </View>

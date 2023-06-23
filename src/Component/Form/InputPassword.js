@@ -9,6 +9,7 @@ export default function InputPassword({
   onChange = () => {},
   value = '',
   keyJson = '',
+  disabled = false,
 }) {
   return (
     <View style={style.view}>
@@ -17,6 +18,7 @@ export default function InputPassword({
         secureTextEntry={true}
         style={style.input}
         value={value}
+        editable={!disabled}
         onChangeText={text => {
           onChange({[keyJson]: text});
         }}

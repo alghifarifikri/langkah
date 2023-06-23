@@ -1,6 +1,15 @@
-import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+} from 'react-native';
 import React, {useState} from 'react';
 import ListRank from '../Component/ListRank';
+
+const {width} = Dimensions.get('window');
 
 export default function Ranks() {
   const [active, setActive] = useState('Walk');
@@ -28,8 +37,15 @@ export default function Ranks() {
   //   active === 'Miles Stone' ? dataMileStone : dataPersonalBest;
   const tab = ['Walk', 'Run', 'Ride', 'Swim'];
   return (
-    <View>
-      <View style={styles.tab}>
+    <View style={styles.imageSoon2}>
+      <Image
+        style={styles.imageSoon}
+        resizeMode="cover"
+        source={{
+          uri: 'https://media.istockphoto.com/id/1273109788/vector/coming-soon-isolated-vector-icon-paper-style-promotion-sign-start-a-new-business-design.jpg?s=612x612&w=0&k=20&c=0APH6QCc371SuCEYLspgp6oh-tE5-rvbK0dzLMRmJGA=',
+        }}
+      />
+      {/* <View style={styles.tab}>
         {tab?.map((item, index) => (
           <TouchableOpacity
             onPress={() => setActive(item)}
@@ -43,7 +59,7 @@ export default function Ranks() {
       </View>
       <Text style={styles.title}>National {active} Rank</Text>
       <ListRank data={data} />
-      {/* <View style={{backgroundColor: 'red', marginLeft: -20}}>
+      <View style={{backgroundColor: 'red', marginLeft: -20}}>
         <Text>test</Text>
       </View> */}
     </View>
@@ -95,5 +111,15 @@ const styles = StyleSheet.create({
   textActiveTab: {
     color: '#F65431',
     fontSize: 12,
+  },
+  imageSoon: {
+    height: width * 0.18 * 2.16,
+    aspectRatio: 1,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    alignItems: 'center',
+  },
+  imageSoon2: {
+    alignItems: 'center',
   },
 });

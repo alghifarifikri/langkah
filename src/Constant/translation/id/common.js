@@ -18,6 +18,7 @@ export default {
   ranks: 'Peringkat',
   individu: 'Individu',
   collective: 'Kolektif',
+  family: 'Keluarga',
   group: 'Grup',
   registermethod: 'Metode Pendaftaran',
   eventregister: 'Pendaftaran Acara',
@@ -45,4 +46,5 @@ export default {
   register: 'Daftar',
   comment: 'Mengomentari Postingan Anda',
   like: 'Menyukai Postingan Anda',
+  history: 'Riwayat Pembayaran',
 };

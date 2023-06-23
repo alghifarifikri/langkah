@@ -16,6 +16,8 @@ import Request from './Request';
 import Notification from './Notification';
 import Follow from './Follow';
 import Followers from './Followers';
+import Family from './Family';
+import RowFamily from './RowFamily';
 import MilesStone from './MilesStone';
 import Event from './Event';
 import REF_Distance from './REF_Distance';
@@ -25,11 +27,14 @@ import REF_Question from './REF_Question';
 import REF_AddOns from './REF_AddOns';
 import Payment from './Payment';
 import REF_Jersey from './REF_Jersey';
+import REF_JerseyFamily from './REF_JerseyFamily';
 import CekEmail from './CekEmail';
+import DropdownFamily from './DropdownFamily';
 
 const reducers = combineReducers({
   REF_Nationality,
   REF_Province,
+  DropdownFamily,
   REF_Identity,
   REF_City,
   REF_District,
@@ -45,6 +50,8 @@ const reducers = combineReducers({
   Notification,
   Follow,
   Followers,
+  Family,
+  RowFamily,
   MilesStone,
   Event,
   REF_Distance,
@@ -55,6 +62,7 @@ const reducers = combineReducers({
   Payment,
   CekEmail,
   REF_Jersey,
+  REF_JerseyFamily,
 });
 
 export default reducers;
