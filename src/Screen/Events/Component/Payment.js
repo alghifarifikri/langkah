@@ -135,12 +135,14 @@ export default function Payment({route, navigation}) {
 
     const validate = await voucherValidate();
     let priceEvent =
-      setupPrice !== null
-        ? setupPrice
-        : paymentData[0]?.price_event;
+      setupPrice !== null ? setupPrice : paymentData[0]?.price_event;
 
-    console.log({ validate, isVoucher });
-    if (isVoucher === false && validate === 'Please firstly enter and activate the voucher correctly. (Silahkan masukkan dan aktivasi voucher dengan benar terlebih dahulu)') {
+    console.log({validate, isVoucher});
+    if (
+      isVoucher === false &&
+      validate ===
+        'Please firstly enter and activate the voucher correctly. (Silahkan masukkan dan aktivasi voucher dengan benar terlebih dahulu)'
+    ) {
       return alert(validate);
     }
 
